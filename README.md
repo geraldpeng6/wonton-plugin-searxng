@@ -1,43 +1,22 @@
-# 云吞插件模板
+# AI 搜索引擎（SearXNG）
 
-开发流程见[插件开发指南](https://github.com/wontonapp/wonton-docs/blob/main/develop.md)。
+一次搜索同时问好几家搜索引擎，把结果排在一起，不记录你搜了什么。家里的 AI 助手要查资料时，也用它搜网页、读网页。
 
-这是一个能安装的示例插件 `app.example.hello`：使用 nginx 官方镜像显示问候页，经网关的 `sso: proxy` 注入用户名，页面显示“你好，<用户名>”。示例没有应用账号、持久化数据或 MCP 工具。
+像换了个更全面的搜索框：百度、必应、搜狗、360、B 站的结果排在一页，不用挨个开网站。在搜索框打字，回车看结果；上面的分类（图片、视频、社交）可以切换。
 
-## 示例文件
+适合想要一个首页搜索、又不想被搜索记录跟踪的家庭。和 vane 这种“先搜再写答案”的 AI 搜索不同，这里给的是各家的原始结果，适合自己看，也适合给 AI 当资料来源。
 
-| 路径 | 内容 |
-| --- | --- |
-| `docker-compose.yml` | 示例清单、nginx 服务和三个 `configs` |
-| `web/default.conf.template` | nginx 配置，启用 SSI 回显用户名并提供健康检查入口；只放行来自核心地址（`${WONTON_CORE_ADDRESS}`）的请求，其余来源 403 |
-| `web/index.html` | 问候页 |
-| `web/tokens.css` | 页面主题变量的后备值 |
-| `tabs/` | 示例主页的应用页面图标 |
-| `screenshots/home.png` | 商店详情页的示例截图 |
-| `scripts/smoke-probes.sh` | 检查真实页面和网关注入身份的插件探针 |
+## 特性
 
-从模板创建自己的插件后，替换示例清单、网页和素材；具体步骤见[写插件](https://github.com/wontonapp/wonton-docs/blob/main/develop.md#写插件)。
+- 聚合搜索：预置国内可直连的引擎（百度、必应、搜狗、360、B 站），其他引擎（如 Google、DuckDuckGo）走平台出网代理。
+- 不记录搜索：SearXNG 不建账号、不存搜索历史，偏好只存在你浏览器的 cookie 里。
+- JSON 接口：`GET /search?q=…&format=json`，给其他插件当搜索能力用。其他插件按能力名 `x-wonton.search` 自动接入要等核心支持插件间依赖（wontonapp/wonton#28）；在那之前，别的插件可以直接调用这个接口，或经工具总线用搜索工具。
+- 搜索工具：Bot 经云吞的工具总线调用 `searxng_web_search`（搜索）和 `web_url_read`（读网页），都是只读。
 
-## 对着别的栈跑探针
+## 上游与许可
 
-`probes`、`api`、`session` 按 `.wonton/.env` 的 `WONTON_BASE_DOMAIN` 拼核心地址，`up` 起的栈自己写这个键。插件装进别人的栈、或者对着已有环境排查时，把那套栈的基础域名写进 `.wonton/.env`，不要只按实例名猜地址：实例名只是资源名前缀，网关按 Host 认域名，拼错了会回“没有安装”。
+- 应用：[SearXNG](https://github.com/searxng/searxng)，AGPL-3.0-or-later，使用上游官方镜像。
+- 搜索工具：[mcp-searxng](https://github.com/ihor-sokoliuk/mcp-searxng)，MIT，使用上游官方镜像。
+- 图标：SearXNG 官方标志，来源、许可和商标说明见 [NOTICE](NOTICE)。
 
-```bash
-WONTON_BASE_DOMAIN=wonton.localhost
-```
-
-## 核心镜像
-
-检查和冒烟默认用套件里的核心镜像（`ghcr.io/wontonapp/wonton-core:main`）；要固定别的核心镜像，在仓库 Settings → Variables 设 `WONTON_CORE_IMAGE`，手动触发“检查”时填的 `core-image` 输入优先。
-
-## 更新开发套件
-
-```bash
-scripts/dev.sh kit-update
-```
-
-在从模板新建的插件仓库中更新套件；本仓库是套件源头，执行时只提示并退出。版本、可选引用和自定义脚本约定见[开发指南](https://github.com/wontonapp/wonton-docs/blob/main/develop.md#更新开发套件)。
-
-## 图标
-
-`icon.svg` 是本仓库原创线条图标，按本仓库 MIT 许可证分发，见 [NOTICE](NOTICE)。
+开发、检查和发布流程见[插件开发指南](https://github.com/wontonapp/wonton-docs/blob/main/develop.md)，规则见[插件规范](https://github.com/wontonapp/wonton-docs/blob/main/plugin-spec.md)。
